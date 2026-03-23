@@ -1,0 +1,157 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div style="margin-bottom: 30px;">
+    <h1 style="font-size: 1.75rem; font-weight: 700;">CENTRAL COMMAND <span
+            style="font-weight: 300; opacity: 0.6;">OPERATIONS</span></h1>
+    <div style="font-size: 0.65rem; color: var(--text-muted); letter-spacing: 2px; text-transform: uppercase;">
+        RESTRICTED ACCESS — SECURE CRIME INCIDENT RISK INTELLIGENCE SYSTEM
+    </div>
+</div>
+
+<div class="stats-grid">
+    <div class="stat-card">
+        <div class="stat-label">Total Cases</div>
+        <div class="stat-value">{{ total_firs }}</div>
+        <div
+            style="margin-top: 15px; background: var(--accent-blue); width: 40px; height: 40px; border-radius: 8px; display: flex; align-items: center; justify-content: center;">
+            <i class="fas fa-file-invoice"></i>
+        </div>
+    </div>
+    <div class="stat-card" style="border-left: 4px solid var(--accent-green);">
+        <div class="stat-label">Solved Cases</div>
+        <div class="stat-value">{{ total_firs - open_cases }}</div>
+        <div style="margin-top: 15px; color: var(--accent-green);">
+            <i class="fas fa-check-circle fa-2x"></i>
+        </div>
+    </div>
+    <div class="stat-card" style="border-left: 4px solid var(--accent-orange);">
+        <div class="stat-label">Pending Cases</div>
+        <div class="stat-value">{{ open_cases }}</div>
+        <div style="margin-top: 15px; color: var(--accent-orange);">
+            <i class="fas fa-clock fa-2x"></i>
+        </div>
+    </div>
+    <div class="stat-card" style="border-left: 4px solid var(--accent-red);">
+        <div class="stat-label">Critical Investigations</div>
+        <div class="stat-value">{{ critical_cases }}</div>
+        <div style="margin-top: 15px; color: var(--accent-red);">
+            <i class="fas fa-exclamation-triangle fa-2x"></i>
+        </div>
+    </div>
+</div>
+
+<div style="display: grid; grid-template-columns: 2fr 1fr; gap: 20px;">
+    <div>
+        <div class="chart-container">
+            <div class="chart-header">Crime Type Distribution</div>
+            <canvas id="crimeTypeChart" height="200"></canvas>
+        </div>
+
+        <div class="chart-container">
+            <div class="chart-header">Recent FIRs</div>
+            <div class="table-responsive">
+                <table class="table-custom">
+                    <thead>
+                        <tr>
+                            <th>FIR No</th>
+                            <th>Title</th>
+                            <th>Priority</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for fir in recent_firs %}
+                        <tr>
+                            <td>{{ fir.fir_number }}</td>
+                            <td>{{ fir.title }}</td>
+                            <td>
+                                <span style="background: 
+                                    {% if fir.priority == 'Critical' %}rgba(239, 68, 68, 0.2); color: var(--accent-red)
+                                    {% elif fir.priority == 'High' %}rgba(245, 158, 11, 0.2); color: var(--accent-orange)
+                                    {% else %}rgba(59, 130, 246, 0.2); color: var(--accent-blue)
+                                    {% endif %};
+                                    padding: 4px 10px; border-radius: 4px; font-size: 0.75rem; font-weight: 600;">
+                                    {{ fir.priority }}
+                                </span>
+                            </td>
+                            <td>{{ fir.status }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div>
+        <div class="chart-container">
+            <div class="chart-header">Regional Hotspots</div>
+            <div style="display: flex; flex-direction: column; gap: 15px;">
+                {% for item in top_districts %}
+                <div
+                    style="display: flex; justify-content: space-between; align-items: center; padding: 10px; background: var(--card-bg); border-radius: 8px;">
+                    <span style="font-size: 0.9rem;">{{ item.district }}</span>
+                    <span style="font-weight: 700; color: var(--accent-orange);">{{ item.count }}</span>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <div class="chart-container">
+            <div class="chart-header">Monthly Trend</div>
+            <canvas id="monthlyTrendChart" height="200"></canvas>
+        </div>
+    </div>
+</div>
+
+<script>
+    const crimeDistribution = {{ crime_distribution | tojson }};
+    const monthlyTrend = {{ monthly_trend | tojson }};
+
+    new Chart(document.getElementById("crimeTypeChart"), {
+        type: "bar",
+        data: {
+            labels: crimeDistribution.map(item => item.crime_type),
+            datasets: [{
+                label: "Cases",
+                data: crimeDistribution.map(item => item.count),
+                backgroundColor: '#3b82f6aa',
+                borderColor: '#3b82f6',
+                borderWidth: 1
+            }]
+        },
+        options: {
+            responsive: true,
+            scales: {
+                y: { grid: { color: '#ffffff11' }, ticks: { color: '#94a3b8' } },
+                x: { grid: { display: false }, ticks: { color: '#94a3b8' } }
+            },
+            plugins: { legend: { display: false } }
+        }
+    });
+
+    new Chart(document.getElementById("monthlyTrendChart"), {
+        type: "line",
+        data: {
+            labels: monthlyTrend.map(item => item.month),
+            datasets: [{
+                label: "FIR Count",
+                data: monthlyTrend.map(item => item.count),
+                borderColor: '#10b981',
+                tension: 0.3,
+                fill: true,
+                backgroundColor: '#10b98111'
+            }]
+        },
+        options: {
+            responsive: true,
+            scales: {
+                y: { display: false },
+                x: { grid: { display: false }, ticks: { color: '#94a3b8' } }
+            },
+            plugins: { legend: { display: false } }
+        }
+    });
+</script>
+{% endblock %}

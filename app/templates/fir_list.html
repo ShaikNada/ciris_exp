@@ -1,0 +1,171 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px;">
+    <div>
+        <h1 style="font-size: 1.75rem; font-weight: 700;">FIR <span
+                style="font-weight: 300; opacity: 0.6;">MANAGEMENT</span></h1>
+        <div style="font-size: 0.65rem; color: var(--text-muted); letter-spacing: 2px; text-transform: uppercase;">
+            ACTIVE INCIDENT REPOSITORY AND CASE TRACKING
+        </div>
+    </div>
+    <a href="/firs/new" class="btn-primary-custom">
+        <i class="fas fa-plus"></i> Add New FIR
+    </a>
+</div>
+
+<div class="stats-grid" style="margin-bottom: 20px;">
+    <div class="stat-card" style="padding: 15px; background: var(--secondary-bg); border-radius: 8px;">
+        <form method="get" action="/firs" style="display: flex; gap: 15px; align-items: flex-end;">
+            <div style="flex: 2;">
+                <label style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 5px; display: block;">Search
+                    Cases</label>
+                <input type="text" name="q" value="{{ q }}" placeholder="FIR No, Title, Location..."
+                    style="width: 100%; background: var(--card-bg); border: 1px solid var(--border-color); color: var(--text-main); border-radius: 6px; padding: 10px;">
+            </div>
+            <div style="flex: 1;">
+                <label
+                    style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 5px; display: block;">District
+                    Filter</label>
+                <select name="district"
+                    style="width: 100%; background: var(--card-bg); border: 1px solid var(--border-color); color: var(--text-main); border-radius: 6px; padding: 10px;">
+                    <option value="">All Districts</option>
+                    {% for dist in districts %}
+                    <option value="{{ dist }}" {% if selected_district==dist %}selected{% endif %}>{{ dist }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <button type="submit" class="btn-primary-custom" style="padding: 10px 25px;">Search</button>
+            <a href="/firs" class="nav-item" style="padding: 10px; font-size: 0.8rem;">Clear</a>
+        </form>
+    </div>
+</div>
+
+<div class="chart-container" style="padding: 0; background: transparent; border: none;">
+    <table class="table-custom">
+        <thead>
+            <tr>
+                <th>FIR Number</th>
+                <th>Incident Details</th>
+                <th>District</th>
+                <th>Priority</th>
+                <th>Status</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for fir in firs %}
+            <tr onclick="showFIRDetail('{{ fir.fir_number }}', '{{ fir.title }}', '{{ fir.district }}', '{{ fir.priority }}', '{{ fir.status }}', '{{ fir.description }}', '{{ fir.image_path or '' }}')"
+                style="cursor: pointer;">
+                <td style="font-weight: 700; color: var(--accent-blue);">{{ fir.fir_number }}</td>
+                <td>
+                    <div style="font-weight: 600;">{{ fir.title }}</div>
+                    <div style="font-size: 0.75rem; color: var(--text-muted);">{{ fir.incident_date }}</div>
+                </td>
+                <td>{{ fir.district }}</td>
+                <td>
+                    <span style="background: 
+                        {% if fir.priority == 'Critical' %}rgba(239, 68, 68, 0.2); color: var(--accent-red)
+                        {% elif fir.priority == 'High' %}rgba(245, 158, 11, 0.2); color: var(--accent-orange)
+                        {% else %}rgba(59, 130, 246, 0.2); color: var(--accent-blue)
+                        {% endif %};
+                        padding: 4px 10px; border-radius: 4px; font-size: 0.75rem; font-weight: 600;">
+                        {{ fir.priority }}
+                    </span>
+                </td>
+                <td>{{ fir.status }}</td>
+                <td>
+                    <div style="display: flex; gap: 10px; color: var(--text-muted);">
+                        <i class="fas fa-eye"></i>
+                        <i class="fas fa-edit"></i>
+                    </div>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<!-- FIR Detail Modal -->
+<div id="firModal"
+    style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 2000; align-items: center; justify-content: center;">
+    <div
+        style="background: var(--secondary-bg); width: 800px; max-height: 90vh; overflow-y: auto; border-radius: 12px; border: 1px solid var(--border-color); padding: 30px; position: relative;">
+        <button onclick="closeModal()"
+            style="position: absolute; top: 20px; right: 20px; background: transparent; border: none; color: var(--text-muted); cursor: pointer; font-size: 1.5rem;">&times;</button>
+
+        <div style="margin-bottom: 25px;">
+            <div id="modal-fir-no" style="font-weight: 700; color: var(--accent-blue); font-size: 1.25rem;"></div>
+            <h2 id="modal-title" style="margin-top: 5px;"></h2>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 30px;">
+            <div>
+                <div style="margin-bottom: 20px;">
+                    <label
+                        style="color: var(--text-muted); font-size: 0.75rem; text-transform: uppercase;">Details</label>
+                    <div id="modal-desc" style="margin-top: 5px; line-height: 1.6;"></div>
+                </div>
+                <div style="display: flex; gap: 20px;">
+                    <div>
+                        <label
+                            style="color: var(--text-muted); font-size: 0.75rem; text-transform: uppercase;">District</label>
+                        <div id="modal-dist" style="font-weight: 600;"></div>
+                    </div>
+                    <div>
+                        <label
+                            style="color: var(--text-muted); font-size: 0.75rem; text-transform: uppercase;">Priority</label>
+                        <div id="modal-priority"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="modal-image-container">
+                <label
+                    style="color: var(--text-muted); font-size: 0.75rem; text-transform: uppercase; margin-bottom: 10px; display: block;">FIR
+                    Document Image</label>
+                <div id="modal-no-image"
+                    style="background: var(--card-bg); height: 200px; border-radius: 8px; display: flex; align-items: center; justify-content: center; border: 1px dashed var(--border-color); color: var(--text-muted);">
+                    No document scan available
+                </div>
+                <img id="modal-img" src="" style="display: none;" class="fir-image-preview">
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    function showFIRDetail(no, title, dist, priority, status, desc, img) {
+        document.getElementById('modal-fir-no').innerText = no;
+        document.getElementById('modal-title').innerText = title;
+        document.getElementById('modal-dist').innerText = dist;
+        document.getElementById('modal-priority').innerText = priority;
+        document.getElementById('modal-desc').innerText = desc;
+
+        const imgEl = document.getElementById('modal-img');
+        const placeholder = document.getElementById('modal-no-image');
+
+        if (img) {
+            imgEl.src = '/static/' + img;
+            imgEl.style.display = 'block';
+            placeholder.style.display = 'none';
+        } else {
+            imgEl.style.display = 'none';
+            placeholder.style.display = 'flex';
+        }
+
+        document.getElementById('firModal').style.display = 'flex';
+    }
+
+    function closeModal() {
+        document.getElementById('firModal').style.display = 'none';
+    }
+
+    window.onclick = function (event) {
+        const modal = document.getElementById('firModal');
+        if (event.target == modal) {
+            closeModal();
+        }
+    }
+</script>
+{% endblock %}

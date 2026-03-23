@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>CIRIS - Crime Incident Risk Intelligence System</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+  <link rel="stylesheet" href="/static/style.css" />
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+  <div class="sidebar">
+    <div class="sidebar-brand">
+      <div class="brand-icon">
+        <i class="fas fa-shield-alt text-white"></i>
+      </div>
+      <div>
+        <div class="brand-name">CIRIS</div>
+        <div style="font-size: 0.65rem; color: var(--text-muted); text-transform: uppercase;">Crime Intelligence</div>
+      </div>
+    </div>
+
+    <nav class="sidebar-nav">
+      <a href="/dashboard" class="nav-item">
+        <i class="fas fa-th-large"></i>
+        <span>Dashboard</span>
+      </a>
+      <a href="/firs" class="nav-item">
+        <i class="fas fa-file-alt"></i>
+        <span>FIR Management</span>
+      </a>
+      <a href="/analytics" class="nav-item">
+        <i class="fas fa-chart-line"></i>
+        <span>Crime Analytics</span>
+      </a>
+      <a href="/monitoring" class="nav-item">
+        <i class="fas fa-video"></i>
+        <span>Monitoring</span>
+      </a>
+      <a href="/evidence" class="nav-item">
+        <i class="fas fa-folder-open"></i>
+        <span>Evidence</span>
+      </a>
+      <a href="/image-enhancement" class="nav-item">
+        <i class="fas fa-image"></i>
+        <span>Image Enhancement</span>
+      </a>
+    </nav>
+
+    <div class="sidebar-footer">
+      <a href="/settings" class="nav-item">
+        <i class="fas fa-cog"></i>
+        <span>Settings</span>
+      </a>
+      <a href="/logout" class="nav-item">
+        <i class="fas fa-sign-out-alt"></i>
+        <span>Logout</span>
+      </a>
+    </div>
+  </div>
+
+  <div class="main-content">
+    <header class="top-header">
+      <div class="search-container">
+        <input type="text" class="search-bar" placeholder="Search cases, FIRs, evidence...">
+      </div>
+
+      <div class="header-right">
+        <div class="badge-live">
+          <div class="pulse"></div>
+          <span>LIVE</span>
+        </div>
+        <div style="font-size: 1.2rem; color: var(--text-muted); cursor: pointer;">
+          <i class="far fa-bell"></i>
+        </div>
+        <div style="display: flex; align-items: center; gap: 10px; padding-left: 10px; border-left: 1px solid var(--border-color);">
+          <div style="background: var(--accent-blue); padding: 5px 10px; border-radius: 50%;">
+            <i class="fas fa-user-shield"></i>
+          </div>
+          <div style="font-size: 0.85rem;">
+            <div style="font-weight: 700;">Admin User</div>
+            <div style="color: var(--text-muted); font-size: 0.75rem;">nada@gmail.com</div>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    {% block content %}{% endblock %}
+  </div>
+
+  <script>
+    // Set active nav item based on current path
+    const path = window.location.pathname;
+    document.querySelectorAll('.nav-item').forEach(item => {
+      if (item.getAttribute('href') === path) {
+        item.classList.add('active');
+      }
+    });
+  </script>
+</body>
+</html>
